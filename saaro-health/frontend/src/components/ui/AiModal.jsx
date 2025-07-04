@@ -69,14 +69,14 @@ const AiModal = ({ onClose }) => {
                 className="w-8 h-8 rounded-full"
               />
               <div>
-                <p className="text-xs text-purple-600 font-medium mb-1">
+                <p className="text-[13px] text-[#69578F] text-400   mb-1">
                   {msg.name}
                 </p>
                 <div
-                  className={`px-4 py-2 rounded-2xl text-sm font-medium break-words max-w-[230px] ${
+                  className={`px-4 py-2 rounded-2xl text-sm  break-words max-w-[230px] ${
                     msg.from === "doctor"
-                      ? "bg-[#7a4de6] text-white"
-                      : "bg-[#eeeafc] text-gray-800"
+                      ? "bg-[#7a4de6] text-[#FAFAFA] text-400 text-right h-[38px]"
+                      : "bg-[#EBE8F2] text-[#120F1A] text-400"
                   }`}
                 >
                   {msg.text}

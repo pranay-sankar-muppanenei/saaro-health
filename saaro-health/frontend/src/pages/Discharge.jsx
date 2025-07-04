@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import { FiSearch } from "react-icons/fi";
+import Button from "../components/ui/Button";
 
 const DischargeSummaryForm = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -54,8 +55,8 @@ const DischargeSummaryForm = () => {
                                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder=" Search Name"
-                                    className="w-full pl-10 pr-4 py-2 border rounded-xl bg-[#f1ecf9] text-[#5e3bea] focus:outline-none text-sm"
+                                    placeholder="Enter UID,Name or Phone Number"
+                                    className="w-full pl-10 pr-4 py-2 border rounded-xl bg-[#EBE8F2] text-[#5e3bea] focus:outline-none text-sm placeholder-[#665491]"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -63,10 +64,10 @@ const DischargeSummaryForm = () => {
                             <div className="flex justify-between">
                                 <div>
                                     <p className="text-lg font-semibold">Eathen Carter</p>
-                                    <p className='text-sm '>UID:1234 | Name: Arjun | Age:25 </p>
+                                    <p className='text-sm text-[#665491]'>UID:1234 | Name: Arjun | Age:25 </p>
                                 </div>
                                 <img
-                                    src="https://www.shutterstock.com/image-vector/happy-young-people-design-vector-600nw-440727109.jpg"
+                                    src="/dishcharge.png"
                                     alt="Patient Image"
                                     className="h-[160px] w-[300px] object-cover rounded"
                                 />
@@ -78,7 +79,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Admission Date & Time</label>
                                 <input
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     placeholder="e.g. 2025-06-29 09:30"
                                     value={formData.admissionDate}
                                     onChange={(e) => handleChange("admissionDate", e.target.value)}
@@ -88,7 +89,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Reason for Admission</label>
                                 <textarea
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     placeholder="e.g. Severe abdominal pain"
                                     value={formData.reason}
                                     onChange={(e) => handleChange("reason", e.target.value)}
@@ -98,7 +99,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Admitted By</label>
                                 <input
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     value={formData.admittedBy}
                                     onChange={(e) => handleChange("admittedBy", e.target.value)}
                                 />
@@ -108,7 +109,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Final Diagnosis</label>
                                 <input
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     value={formData.finalDiagnosis}
                                     onChange={(e) => handleChange("finalDiagnosis", e.target.value)}
                                 />
@@ -117,7 +118,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Secondary Diagnosis (optional)</label>
                                 <input
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     value={formData.secondaryDiagnosis}
                                     onChange={(e) => handleChange("secondaryDiagnosis", e.target.value)}
                                 />
@@ -127,7 +128,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Treatment Description</label>
                                 <textarea
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2]mb-2 placeholder-[#665491]"
                                     value={formData.treatment}
                                     onChange={(e) => handleChange("treatment", e.target.value)}
                                 />
@@ -145,7 +146,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Daily Notes</label>
                                 <textarea
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     value={formData.dailyNotes}
                                     onChange={(e) => handleChange("dailyNotes", e.target.value)}
                                 />
@@ -154,7 +155,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Infection, Complications, Progress</label>
                                 <textarea
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     value={formData.complications}
                                     onChange={(e) => handleChange("complications", e.target.value)}
                                 />
@@ -166,7 +167,7 @@ const DischargeSummaryForm = () => {
                                 {formData.medications.map((med, i) => (
                                     <div key={i} className="grid grid-cols-2 md:grid-cols-4 gap-2 my-2">
                                         <input
-                                            className="border p-2 rounded bg-[#f4f1fa] mb-2"
+                                            className="border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                             placeholder="Drug Name"
                                             value={med.name}
                                             onChange={(e) => {
@@ -176,7 +177,7 @@ const DischargeSummaryForm = () => {
                                             }}
                                         />
                                         <input
-                                            className="border p-2 rounded bg-[#f4f1fa] mb-2"
+                                            className="border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                             placeholder="Dosage"
                                             value={med.dosage}
                                             onChange={(e) => {
@@ -186,7 +187,7 @@ const DischargeSummaryForm = () => {
                                             }}
                                         />
                                         <input
-                                            className="border p-2 rounded bg-[#f4f1fa] mb-2"
+                                            className="border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                             placeholder="Frequency"
                                             value={med.frequency}
                                             onChange={(e) => {
@@ -196,7 +197,7 @@ const DischargeSummaryForm = () => {
                                             }}
                                         />
                                         <input
-                                            className="border p-2 rounded bg-[#f4f1fa] mb-2"
+                                            className="border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]" 
                                             placeholder="Duration"
                                             value={med.duration}
                                             onChange={(e) => {
@@ -213,7 +214,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Diet / Lifestyle Advice</label>
                                 <textarea
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     value={formData.dietAdvice}
                                     onChange={(e) => handleChange("dietAdvice", e.target.value)}
                                 />
@@ -222,7 +223,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Medication Continuation Instructions</label>
                                 <textarea
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 placeholder-[#665491]"
                                     value={formData.continuation}
                                     onChange={(e) => handleChange("continuation", e.target.value)}
                                 />
@@ -231,7 +232,7 @@ const DischargeSummaryForm = () => {
                             <div>
                                 <label className="block font-medium mb-1">Warning Signs (If any)</label>
                                 <textarea
-                                    className="w-full border p-2 rounded bg-[#f4f1fa] mb-2"
+                                    className="w-full border p-2 rounded bg-[#EBE8F2] mb-2 "
                                     value={formData.warningSigns}
                                     onChange={(e) => handleChange("warningSigns", e.target.value)}
                                 />
@@ -243,7 +244,7 @@ const DischargeSummaryForm = () => {
                                 <div>
                                     <label className="block font-medium mb-1">Date</label>
                                     <input
-                                        className="border p-2 rounded bg-[#f4f1fa] w-full mb-2"
+                                        className="border p-2 rounded bg-[#EBE8F2] w-full mb-2 placeholder-[#665491]"
                                         value={formData.followUp.date}
                                         onChange={(e) => handleChange("date", e.target.value, "followUp")}
                                     />
@@ -251,7 +252,7 @@ const DischargeSummaryForm = () => {
                                 <div>
                                     <label className="block font-medium mb-1">Department</label>
                                     <input
-                                        className="border p-2 rounded bg-[#f4f1fa] w-full mb-2"
+                                        className="border p-2 rounded bg-[#EBE8F2] w-full mb-2 placeholder-[#665491]"
                                         value={formData.followUp.department}
                                         onChange={(e) => handleChange("department", e.target.value, "followUp")}
                                     />
@@ -259,7 +260,7 @@ const DischargeSummaryForm = () => {
                                 <div>
                                     <label className="block font-medium mb-1">Referred Doctor (if any)</label>
                                     <input
-                                        className="border p-2 rounded bg-[#f4f1fa] w-full mb-2"
+                                        className="border p-2 rounded bg-[#EBE8F2] w-full mb-2 placeholder-[#665491]"
                                         value={formData.followUp.referredDoctor}
                                         onChange={(e) => handleChange("referredDoctor", e.target.value, "followUp")}
                                     />
@@ -267,7 +268,7 @@ const DischargeSummaryForm = () => {
                                 <div>
                                     <label className="block font-medium mb-1">Telemedicine Link (optional)</label>
                                     <input
-                                        className="border p-2 rounded bg-[#f4f1fa] w-full mb-2"
+                                        className="border p-2 rounded bg-[#EBE8F2] w-full mb-2 placeholder-[#665491]"
                                         value={formData.followUp.telemedicineLink}
                                         onChange={(e) => handleChange("telemedicineLink", e.target.value, "followUp")}
                                     />
@@ -277,10 +278,10 @@ const DischargeSummaryForm = () => {
                             {/* Actions */}
                             <div className="flex justify-between gap-4 mt-6 flex-wrap">
                                 <div className="flex gap-6">
-                                    <button className="bg-purple-600 text-white px-4 py-2 rounded">AI Generate Summary</button>
-                                    <button className="bg-purple-100 text-purple-700 px-4 py-2 rounded">Download PDF</button>
+                                       <Button className="bg-purple-600 text-white px-4 py-2 rounded">AI Generate Summary</Button>
+                                    <button className="bg-purple-100 text-purple-700 px-4 py-2 rounded-full">Download PDF</button>
                                 </div>
-                                <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded">Share via WhatsApp / Email</button>
+                                <Button className="bg-gray-100 text-gray-700 px-4 py-2 rounded">Share via WhatsApp / Email</Button>
                             </div>
                         </div>
                     </div>

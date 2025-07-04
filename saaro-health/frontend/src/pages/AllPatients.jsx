@@ -5,6 +5,7 @@ import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import GenericTable from "../components/ui/GenericTable";
 import { patientsData as dummyPatientsData } from "../data/AllPatientsDummyData";
+import Button from "../components/ui/Button";
 
 const categoryOptions = ["All", "New", "Follow-up", "Chronic", "Emergency"];
 
@@ -24,7 +25,6 @@ const AllPatients = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
 
-  // Use local patients array to store new data
   const [patients, setPatients] = useState(dummyPatientsData);
 
   const [formData, setFormData] = useState({
@@ -48,7 +48,7 @@ const AllPatients = () => {
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
-    setErrors({ ...errors, [field]: "" }); // Clear error when user types
+    setErrors({ ...errors, [field]: "" });
   };
 
   const validateForm = () => {
@@ -56,7 +56,7 @@ const AllPatients = () => {
     if (formData.primaryPhone.length !== 10) {
       newErrors.primaryPhone = "Primary phone must be exactly 10 digits.";
     }
-    if (formData.alternatePhone.length!==0 && formData.alternatePhone.length !== 10) {
+    if (formData.alternatePhone.length !== 0 && formData.alternatePhone.length !== 10) {
       newErrors.alternatePhone = "Alternate phone must be exactly 10 digits.";
     }
     if (formData.fullName.trim().length < 3) {
@@ -72,19 +72,17 @@ const AllPatients = () => {
       return;
     }
 
-    // Add new patient
     const newPatient = {
       uid: (patients.length + 1).toString().padStart(5, "0"),
       name: formData.fullName,
       phone: formData.primaryPhone,
-      lastVisit: new Date().toISOString().split("T")[0], // use current date
+      lastVisit: new Date().toISOString().split("T")[0],
       category: formData.category || "New",
       action: "Consult",
     };
 
     setPatients([newPatient, ...patients]);
 
-    // Reset form
     setFormData({
       primaryPhone: "",
       alternatePhone: "",
@@ -124,12 +122,9 @@ const AllPatients = () => {
           <div className="max-w-[90%] mx-auto py-8 space-y-10">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold">All Patients</h1>
-              <button
-                className="bg-[#ece8f9] text-[#120F1A] px-4 py-2 rounded-xl text-sm font-medium"
-                onClick={() => setIsModalOpen(true)}
-              >
+              <Button onClick={() => setIsModalOpen(true)}>
                 Register Patient
-              </button>
+              </Button>
             </div>
 
             <div className="relative w-full mb-2">

@@ -272,9 +272,9 @@ const ConsultationForm = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-4 mt-4">
-                <button className="bg-purple-600 text-white px-4 py-2 rounded-2xl">Save & Finalize</button>
+                <button className="bg-[#7047d1] text-white px-4 py-2 rounded-2xl">Save & Finalize</button>
                 <button className="bg-gray-200 px-4 py-2 rounded">Print Prescription</button>
-                <button className="bg-purple-600 text-white px-4 py-2 rounded-2xl ml-auto">Send via WhatsApp</button>
+                <button className="bg-[#7047d1] text-white px-4 py-2 rounded-2xl ml-auto">Send via WhatsApp</button>
               </div>
             </div>
           </div>

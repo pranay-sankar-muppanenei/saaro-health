@@ -3,6 +3,7 @@ import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import GenericTable from "../components/ui/GenericTable";
 import { dropDownData as dummyData } from "../data/DropDownDummyData";
+import Button from "../components/ui/Button";
 
 const columns = [
     { label: "Entry Name", accessor: "name" },
@@ -67,12 +68,12 @@ const DropDownConfiguration = () => {
                     <div className="max-w-[90%] mx-auto py-8 space-y-10">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-2xl font-bold">Dropdown Configuration</h2>
-                            <button
+                            <Button
                                 onClick={() => setIsModalOpen(true)}
                                 className="bg-[#a381f0] text-white font-semibold px-4 py-2 rounded-full hover:bg-[#8f6de1]"
                             >
                                 + Add New Entry
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="overflow-x-auto rounded-xl">

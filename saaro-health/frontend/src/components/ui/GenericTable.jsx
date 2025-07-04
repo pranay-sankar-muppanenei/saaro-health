@@ -44,7 +44,7 @@ const GenericTable = ({ columns = [], data = [], renderCell }) => {
                       ) : (
                         <span
                           className={
-                            ["time", "type", "date", "procedure","actions","token","ageGender","dosage","frequency","duration","notes"].includes(col.accessor)
+                            ["time", "type", "date","items","creator", "procedure","actions","token","ageGender","dosage","frequency","duration","notes"].includes(col.accessor)
                               ? "text-[#69578F] text-400"
                               : "text-gray-900"
                           }

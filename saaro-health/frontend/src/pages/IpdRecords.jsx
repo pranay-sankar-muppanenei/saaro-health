@@ -5,6 +5,7 @@ import GenericTable from "../components/ui/GenericTable";
 import { FiSearch } from "react-icons/fi";
 import { ipdData } from "../data/IpdDummyData";
 import { Link } from "react-router-dom";
+import Button from "../components/ui/Button";
 
 const columns = [
   { label: "Record ID", accessor: "id" },
@@ -38,12 +39,12 @@ const IPDRecords = () => {
             <div className="flex justify-between items-center ">
               <h1 className="text-2xl font-bold mb-0">IPD Records</h1>
               <Link to='/ipd/discharge'>
-                <button
-                  className="bg-[#ece8f9] text-[#120F1A] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#dcd6f2] transition-colors"
+                <Button
                   onClick={handleCreateSummary}
+                  className="bg-[#ece8f9] text-[#120F1A] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#dcd6f2] transition-colors"
                 >
                   Create Discharge Summary
-                </button>
+                </Button>
               </Link>
             </div>
 

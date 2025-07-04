@@ -18,6 +18,9 @@ import DischargeSummaryForm from "./pages/Discharge"
 import Messages from "./pages/Messages"
 import AppointmentsDashboard from "./pages/Appointments"
 import NotFoundPage from "./pages/PageNotFound"
+import Socials from "./pages/Socials";
+import Automation from "./pages/Automation"
+
 function App() {
 
 
@@ -39,6 +42,8 @@ function App() {
         <Route path={`/:id/consult`} element={<ProtectedRoute><ConsultationForm /></ProtectedRoute>} />
         <Route path="/ipd/discharge" element={<ProtectedRoute><DischargeSummaryForm /></ProtectedRoute>} />
         <Route path='/messages' element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+        <Route path="/social" element={<ProtectedRoute><Socials /></ProtectedRoute>} />
+        <Route path="/automation" element={<ProtectedRoute><Automation /></ProtectedRoute>} />
         <Route path='/appointments' element={<ProtectedRoute><AppointmentsDashboard /></ProtectedRoute>} />
         <Route path="*" element={<NotFoundPage />} />
      </Routes>

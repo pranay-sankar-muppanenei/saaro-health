@@ -3,6 +3,7 @@ import { FiSearch } from "react-icons/fi";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import GenericTable from "../components/ui/GenericTable";
+import Button from "../components/ui/Button";
 import { rxData as initialRxData } from "../data/RxDummyData";
 import { Link } from "react-router-dom";
 
@@ -82,9 +83,7 @@ const CreateRx = () => {
           <div className="max-w-[90%] mx-auto py-8 space-y-10">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold">Create Rx</h1>
-              <button onClick={handleRegisterPatient} className="bg-[#ece8f9] text-[#120F1A] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#dcd6f2] transition-colors">
-                Register Patient
-              </button>
+              <Button onClick={handleRegisterPatient}>Register Patient</Button>
             </div>
 
             <div className="relative w-full max-w mb-6">

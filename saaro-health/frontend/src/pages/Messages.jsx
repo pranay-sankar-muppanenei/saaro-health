@@ -1,6 +1,6 @@
 // ChatUIWithFeatures.jsx
 import React, { useState } from "react";
-import { FiSend, FiPaperclip, FiPhone, FiUpload } from "react-icons/fi";
+import { FiSend, FiPaperclip, FiPhone, FiUpload ,FiSearch} from "react-icons/fi";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import { contacts } from "../data/MessagesDummyData";
@@ -9,10 +9,10 @@ const Messages = () => {
     const [selectedContact, setSelectedContact] = useState(contacts[0]);
     const [message, setMessage] = useState('')
     const [messages, setMessages] = useState([
-        { from: "Owen", text: "Hi Dr. Chen, I've been experiencing a persistent cough and some shortness of breath.", date: "Today" },
-        { from: "Dr. Amelia Chen", text: "Hello", date: "Today" },
-        { from: "Owen", text: "Thank you, Dr. Chen. I appreciate your prompt response.", date: "Yesterday" },
-        { from: "Dr. Amelia Chen", text: "You're welcome, Owen. I'm here to help.", date: "Yesterday" },
+        { from: "Owen", text: "Hi Dr. Chen, I've been experiencing a persistent cough and some shortness of breath.", date: "Today",img:"/Owen Bennett.png" },
+        { from: "Dr. Amelia Chen", text: "Hello", date: "Today",img:"/amelia chen.png" },
+        { from: "Owen", text: "Thank you, Dr. Chen. I appreciate your prompt response.", date: "Yesterday",img:"/Owen Bennett.png" },
+        { from: "Dr. Amelia Chen", text: "You're welcome, Owen. I'm here to help.", date: "Yesterday",img:"/amelia chen.png" },
     ]);
     const [status, setStatus] = useState(false);
     const [searchText, setSearchText] = useState("");
@@ -50,36 +50,47 @@ const Messages = () => {
                     <div className="max-w-[90%] mx-auto py-8 space-y-10">
                         <div className="flex h-screen font-sans">
                             {/* Sidebar (Chat List) */}
-                            <div className="w-1/4 bg-white p-4">
-                                <h1 className="text-2xl font-semibold mb-6">Chat</h1>
+                            <div className="w-1/3 bg-white p-4">
+                                <h1 className="text-2xl text-[#120F1A] text-700  font-semibold mb-6">Chat</h1>
+                    
+
+                                <div className="relative w-[89%] mb-4">
+                                <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-[#665491] text-lg" />
                                 <input
                                     type="text"
                                     value={searchText}
                                     onChange={(e) => setSearchText(e.target.value)}
                                     placeholder="Search by Name / UID / Role"
-                                    className="w-full mb-4 p-2 rounded bg-gray-100 text-sm"
+                                    className="w-full pl-10 p-3 rounded bg-[#EBE8F2] placeholder-[#665491] text-sm"
                                 />
-                                <div className="grid grid-cols-2 gap-2 mb-4">
-                                    {["All", "Patients", "Staff", "Doctors",].map((cat) => (
+                                </div>
+
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {["All", "Patients", "Staff", "Doctors"].map((cat) => (
                                         <button
-                                            key={cat}
-                                            onClick={() => setFilterCategory(cat)}
-                                            className={`px-1 py-1 text-xs rounded-full ${filterCategory === cat
-                                                ? "bg-purple-600 text-white"
-                                                : "bg-purple-200 hover:bg-purple-100"
-                                                }`}
+                                        key={cat}
+                                        onClick={() => setFilterCategory(cat)}
+                                        className={`px-1 py-1 text-xs rounded-full ${
+                                            filterCategory === cat
+                                            ? "bg-[#6B3DD6] text-[#FAFAFA] text-600 h-[32px] w-[82px] rounded-2xl"
+                                            : "bg-[#EBE8F2] h-[32px] w-[81px] rounded-2xl text-[#120F1A] text-500 text-[14px] hover:bg-purple-300"
+                                        }`}
                                         >
-                                            {cat}
+                                        {cat}
                                         </button>
                                     ))}
                                     <button
                                         onClick={() => setStatus(!status)}
-                                        className={`px-1 py-1 text-xs rounded-full ${status ? "bg-purple-600 text-white" : "bg-purple-200 hover:bg-purple-100"
-                                            }`}
+                                        className={`px-1 py-1 text-xs rounded-full ${
+                                        status
+                                            ? "bg-[#6B3DD6] text-[#FAFAFA] text-600 h-[32px] w-[82px] rounded-2xl"
+                                            : "bg-[#EBE8F2] h-[32px] w-[81px] rounded-2xl text-[#120F1A] text-500 text-[14px] hover:bg-purple-300"
+                                        }`}
                                     >
                                         Unread
                                     </button>
                                 </div>
+
                                 {filteredData.map((contact) => (
                                     <div
                                         key={contact.id}
@@ -88,13 +99,13 @@ const Messages = () => {
                                             }`}
                                     >
                                         <img
-                                            src={`https://i.pravatar.cc/40?u=${contact.id}`}
+                                            src={contact.img}
                                             alt="avatar"
-                                            className="w-10 h-10 rounded-full"
+                                            className="w-[56px] h-[56px] rounded-full"
                                         />
                                         <div className="flex-1">
-                                            <p className="text-sm font-semibold">{contact.name}</p>
-                                            <p className="text-xs text-gray-500">{contact.time}</p>
+                                            <p className="text-[16px]  text-[#120F1A] text-500">{contact.name}</p>
+                                            <p className="text-xs text-[#665491]">{contact.time}</p>
                                         </div>
                                         {contact.status === 'unread' ? <div className="w-2 h-2 bg-green-500 rounded-full"></div> : null}
                                     </div>
@@ -111,8 +122,8 @@ const Messages = () => {
                                         className="w-28 h-28 rounded-full object-cover mb-4"
                                     />
                                     <h2 className="text-xl font-semibold text-gray-900">{selectedContact.name}</h2>
-                                    <p className="text-sm text-gray-500">UID: 12345</p>
-                                    <p className="text-sm text-purple-600 font-medium">
+                                    <p className="text-sm  text-[#665491] text-400">UID: 12345</p>
+                                    <p className="text-sm text-[#665491] text-400 font-medium">
                                         {selectedContact.name.toLowerCase().startsWith("dr.")
                                             ? "Doctor"
                                             : selectedContact.role || "Patient"}
@@ -124,12 +135,12 @@ const Messages = () => {
                                     
                                     <button 
                                     onClick={callUser}
-                                    className="px-4 py-1 rounded-full bg-[#EBE8F2] text-sm font-medium">
+                                    className="px-4 py-1 rounded-full h-[40px] w-[84px] bg-[#EBE8F2] text-sm font-medium">
                                         Call
                                     </button>
                                     <button 
                                     onClick={shareFile}
-                                    className="px-4 py-1 rounded-full bg-[#EBE8F2] text-sm font-medium">
+                                    className="px-4 py-1 rounded-full bg-[#EBE8F2] h-[40px] w-[100px] text-sm font-medium">
                                         Share File
                                     </button>
                                 </div>
@@ -148,27 +159,30 @@ const Messages = () => {
                                             >
                                                 {!isDoctor && (
                                                     <img
-                                                        src={`https://i.pravatar.cc/40?u=${msg.from}`}
+                                                        src={msg.img}
                                                         alt={msg.from}
                                                         className="w-8 h-8 rounded-full"
                                                     />
                                                 )}
 
-                                                <div className={`max-w-md ${isDoctor ? "text-right" : "text-left"}`}>
-                                                    <p className="text-xs text-gray-500 mb-1">{msg.from}</p>
+                                                <div className={`h-[48px] mt-5 max-w-md`}>
+                                                    <p className={`text-xs text-[#665491] text-400 mb-1 ${isDoctor ? "text-right" : "text-left"}`}>
+                                                        {msg.from}
+                                                    </p>
                                                     <div
                                                         className={`px-4 py-2 rounded-xl text-sm ${isDoctor
-                                                                ? "bg-[#6B3DD6] text-white"
-                                                                : "bg-[#EBE8F2] text-gray-900"
-                                                            }`}
+                                                        ? "bg-[#6B3DD6] text-white"
+                                                        : "bg-[#EBE8F2] text-gray-900"
+                                                        }`}
                                                     >
                                                         {msg.text}
                                                     </div>
                                                 </div>
 
+
                                                 {isDoctor && (
                                                     <img
-                                                        src={`https://i.pravatar.cc/40?u=${msg.from}`}
+                                                        src={msg.img}
                                                         alt={msg.from}
                                                         className="w-8 h-8 rounded-full"
                                                     />
@@ -182,7 +196,7 @@ const Messages = () => {
                                 {/* Input */}
                                 <div className="border-t p-4 flex items-center gap-2">
                                     <img
-                                        src={`https://i.pravatar.cc/40?u=me`}
+                                        src={"/karen.png"}
                                         className="w-8 h-8 rounded-full"
                                         alt="You"
                                     />

@@ -4,6 +4,7 @@ import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import GenericTable from "../components/ui/GenericTable";
 import { medicines as dummyMedicines } from "../data/MedicineDummyData";
+import Button from "../components/ui/Button";
 
 const columns = [
   { label: "Name", accessor: "name" },
@@ -87,12 +88,12 @@ const Medicines = () => {
           <div className="max-w-[90%] mx-auto py-8 space-y-10">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold">Medicines</h2>
-              <button
+              <Button
                 className="bg-[#f4f0fd] text-black font-semibold px-4 py-2 rounded-full hover:bg-[#e0dbf6]"
                 onClick={() => setIsModalOpen(true)}
               >
                 + Add Medicine
-              </button>
+              </Button>
             </div>
 
             <div className="relative w-full mb-4">

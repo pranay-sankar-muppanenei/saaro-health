@@ -59,12 +59,12 @@ const KPISection = ({ kpis }) => {
           </div>
 
           {/* Right aligned SVG curve */}
-         <div className="absolute top-12 bottom-5 right-2 w-28 h-28">
+         <div className="absolute top-12 bottom-5 right-2 w-28 h-28 ">
   <svg
     width="100%"
     height="100%"
     viewBox="0 0 100 60"
-    fill="none"
+    fill={kpi.color}
     xmlns="http://www.w3.org/2000/svg"
     preserveAspectRatio="none"
   >
@@ -86,7 +86,7 @@ const KPISection = ({ kpis }) => {
       d="M0,40 C20,20 40,60 60,30 C80,0 100,40 100,60"
       fill="none"
       stroke={kpi.color}
-      strokeWidth="5"
+      strokeWidth="8"
       strokeLinecap="round"
       strokeLinejoin="round"
     />

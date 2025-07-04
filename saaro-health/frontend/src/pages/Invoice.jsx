@@ -4,6 +4,7 @@ import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import KPISection from "../components/ui/KpiSection";
 import GenericTable from "../components/ui/GenericTable";
+import Button from "../components/ui/Button";
 
 import { FiSearch } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
@@ -131,15 +132,14 @@ const Invoice = () => {
           <div className="max-w-7xl mx-auto space-y-10">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-semibold text-[#322e45]">Invoices</h1>
-              <button
-                className="bg-[#5e3bea] hover:bg-[#472dc4] text-white px-5 py-2 rounded-lg text-sm font-medium shadow"
-                onClick={() => setIsModalOpen(true)}
-              >
+              <Button onClick={() => setIsModalOpen(true)} className="px-5 text-sm font-medium shadow">
                 + Create Invoice
-              </button>
+              </Button>
             </div>
 
-            <KPISection kpis={INVOICE_KPIS} />
+            <div className="bg-[#f9f6ff] p-4 rounded-xl">
+  <KPISection kpis={INVOICE_KPIS} />
+</div>
 
             <GenericTable
               columns={columns}
@@ -217,8 +217,9 @@ const Invoice = () => {
               <textarea placeholder="Patient Note" className="border border-gray-300 px-4 py-2 rounded-md mt-4 w-full resize-none" value={formData.patientNote} onChange={(e) => handleInputChange("patientNote", e.target.value)} />
 
               <div className="flex justify-end gap-4 mt-8">
-                <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancel</button>
-                <button onClick={handleCreateInvoice} className="px-5 py-2 bg-[#5e3bea] text-white rounded-md hover:bg-[#472dc4] shadow">Create Invoice</button>
+                <Button onClick={handleCreateInvoice} className="px-5 shadow hover:bg-[#472dc4]">
+                  Create Invoice
+                </Button>
               </div>
             </div>
           </div>
