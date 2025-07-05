@@ -281,7 +281,7 @@ const DischargeSummaryForm = () => {
                                        <Button className="bg-purple-600 text-white px-4 py-2 rounded">AI Generate Summary</Button>
                                     <button className="bg-purple-100 text-purple-700 px-4 py-2 rounded-full">Download PDF</button>
                                 </div>
-                                <Button className="bg-gray-100 text-gray-700 px-4 py-2 rounded">Share via WhatsApp / Email</Button>
+                                <Button className="bg-[#7042D9] text-gray-700 px-4 py-2 rounded">Share via WhatsApp / Email</Button>
                             </div>
                         </div>
                     </div>

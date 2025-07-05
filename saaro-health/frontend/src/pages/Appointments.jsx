@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiPlus } from "react-icons/fi";
-import StatBox from "../components/ui/StatBox";
+import StatBox2 from "../components/ui/StatBox2";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import { stats, appointments as initialAppointments } from "../data/AppointmentsDummyData";
@@ -92,7 +92,7 @@ const AppointmentsDashboard = () => {
               <div className="w-1/3 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold mb-3">Appointment Stats Overview</h2>
-                  <StatBox stats={stats} />
+                  <StatBox2 stats={stats} />
                 </div>
 
                 <div>

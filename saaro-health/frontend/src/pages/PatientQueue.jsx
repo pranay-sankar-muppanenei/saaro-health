@@ -60,6 +60,11 @@ const PatientQueue = () => {
                 <main className="flex-1 bg-white overflow-y-auto">
                     <div className="max-w-[90%] mx-auto  py-8 space-y-10">
                         <h1 className="text-2xl font-bold mb-4">Patient Queue</h1>
+                        {/* Right Stats Panel */}
+                           <div className="w-full mt-4 space-y-2">
+  <h1 className="text-lg font-semibold mb-2">Quick Stats</h1>
+  <StatBox stats={stats} />
+</div>
 
                         <div className='flex justify-start w-max mb-4 ml-0'>
                             <TabHeader
@@ -98,11 +103,7 @@ const PatientQueue = () => {
                                 </div>
                             </div>
 
-                            {/* Right Stats Panel */}
-                            <div className="w-full lg:w-64 mt-6 lg:mt-0 space-y-4">
-                                <h1 className="text-lg font-semibold">Quick Stats</h1>
-                                <StatBox stats={stats} />
-                            </div>
+                            
                         </div>
                     </div>
                 </main>

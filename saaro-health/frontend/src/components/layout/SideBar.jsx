@@ -88,6 +88,12 @@ const Sidebar = () => {
           alt="Saaro Health Logo"
           className="h-30 w-auto object-contain -mb-20 -mt-20 -ml-5"
           />
+          {/*<h1 className="text-2xl font-semibold flex items-center gap-1">
+            <span className="text-purple-600">Saaro</span>{" "}
+            <span className="text-green-600 border border-green-600 px-2 py-0.5 rounded-full p-1">
+              health
+            </span>
+          </h1>*/}
         </div>
         <SidebarContent isLibraryOpen={isLibraryOpen} setIsLibraryOpen={setIsLibraryOpen} />
       </aside>

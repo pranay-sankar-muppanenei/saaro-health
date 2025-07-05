@@ -41,7 +41,7 @@ const IPDRecords = () => {
               <Link to='/ipd/discharge'>
                 <Button
                   onClick={handleCreateSummary}
-                  className="bg-[#ece8f9] text-[#120F1A] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#dcd6f2] transition-colors"
+                  className="bg-[#7042D9] text-[#120F1A] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#dcd6f2] transition-colors"
                 >
                   Create Discharge Summary
                 </Button>
