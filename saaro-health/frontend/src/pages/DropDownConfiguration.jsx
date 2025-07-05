@@ -70,7 +70,7 @@ const DropDownConfiguration = () => {
                             <h2 className="text-2xl font-bold">Dropdown Configuration</h2>
                             <Button
                                 onClick={() => setIsModalOpen(true)}
-                                className="bg-[#a381f0] text-white font-semibold px-4 py-2 rounded-full hover:bg-[#8f6de1]"
+                                className="bg-[#7042D9] text-white font-semibold px-4 py-2 rounded-full hover:bg-[#8f6de1]"
                             >
                                 + Add New Entry
                             </Button>

@@ -3,6 +3,7 @@ import { FiPlus } from "react-icons/fi";
 import StatBox2 from "../components/ui/StatBox2";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
+import Button from "../components/ui/Button"
 import { stats, appointments as initialAppointments } from "../data/AppointmentsDummyData";
 
 const AppointmentsDashboard = () => {
@@ -80,12 +81,12 @@ const AppointmentsDashboard = () => {
                   ))}
                 </div>
 
-                <button
-                  className="mt-6 bg-purple-500 hover:bg-purple-600 text-white px-5 py-2 rounded-full flex items-center gap-2"
+                <Button
+                  className="mt-6 bg-[#7042D9] hover:bg-purple-600 text-white px-5 py-2 rounded-full flex items-center gap-2"
                   onClick={() => setIsModalOpen(true)}
                 >
                   <FiPlus /> Add Appointment
-                </button>
+                </Button>
               </div>
 
               {/* Right Sidebar */}
@@ -102,11 +103,11 @@ const AppointmentsDashboard = () => {
                     alt="QR Code"
                     className="rounded-xl w-[328px] h-[276px]"
                   />
-                  <div className="flex gap-2 mt-3">
-                    <button className="bg-gray-100 text-sm px-3 py-1 rounded">
+                  <div className="flex justify-between items-center  mt-3">
+                    <button className="bg-[#EDE8F2] text-700 text-sm text-[#120F1A] px-3 py-1 rounded-full">
                       Copy Link
                     </button>
-                    <button className="bg-purple-100 text-gray-900 text-sm px-3 py-1 rounded">
+                    <button className="bg-[#EDE8F2] text-700 text-[#120F1A] text-sm px-3 py-1 rounded-full">
                       Share on WhatsApp
                     </button>
                   </div>

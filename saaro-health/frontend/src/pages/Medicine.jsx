@@ -89,7 +89,7 @@ const Medicines = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold">Medicines</h2>
               <Button
-                className="bg-[#f4f0fd] text-black font-semibold px-4 py-2 rounded-full hover:bg-[#e0dbf6]"
+                className="bg-[#7042D9] text-black font-semibold px-4 py-2 rounded-full hover:bg-[#e0dbf6]"
                 onClick={() => setIsModalOpen(true)}
               >
                 + Add Medicine

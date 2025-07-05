@@ -88,7 +88,7 @@ const Templates = () => {
               <h2 className="text-2xl font-bold">Templates</h2>
               <Button
                 onClick={handleCreateTemplate}
-                className="bg-[#f4f0fd] text-black font-semibold px-4 py-2 rounded-full hover:bg-[#e0dbf6]">
+                className="bg-[#7042D9] text-black font-semibold px-4 py-2 rounded-full hover:bg-[#e0dbf6]">
                 + Create Template
               </Button>
             </div>
