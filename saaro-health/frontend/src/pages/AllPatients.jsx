@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
 import Sidebar from "../components/layout/SideBar";
@@ -6,6 +7,7 @@ import Header from "../components/layout/Header";
 import GenericTable from "../components/ui/GenericTable";
 import { patientsData as dummyPatientsData } from "../data/AllPatientsDummyData";
 import Button from "../components/ui/Button";
+import Pagination from "../components/ui/Pagination"; // using your existing Pagination
 
 const categoryOptions = ["All", "New", "Follow-up", "Chronic", "Emergency"];
 
@@ -18,14 +20,15 @@ const columns = [
   { label: "Action", accessor: "action" },
 ];
 
+
 const AllPatients = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Category");
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-
   const [patients, setPatients] = useState(dummyPatientsData);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     primaryPhone: "",
@@ -43,8 +46,10 @@ const AllPatients = () => {
     category: "",
     referredBy: "",
   });
-
   const [errors, setErrors] = useState({});
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 7;
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -82,7 +87,6 @@ const AllPatients = () => {
     };
 
     setPatients([newPatient, ...patients]);
-
     setFormData({
       primaryPhone: "",
       alternatePhone: "",
@@ -109,9 +113,18 @@ const AllPatients = () => {
       val.toLowerCase().includes(searchTerm.toLowerCase())
     );
     const matchesCategory =
-      categoryFilter === "Category" || row.category === categoryFilter;
+      categoryFilter === "Category" || categoryFilter === "All" || row.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredPatients.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(filteredPatients.length / rowsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, patients]);
 
   return (
     <div className="flex h-screen">
@@ -138,7 +151,7 @@ const AllPatients = () => {
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <button
                 onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
                 className="px-3 py-1 bg-gray-100 rounded-lg text-sm flex items-center gap-2"
@@ -168,7 +181,7 @@ const AllPatients = () => {
 
             <GenericTable
               columns={columns}
-              data={filteredPatients}
+              data={currentRows}
               renderCell={(row, accessor) => {
                 if (accessor === "category") {
                   return (
@@ -179,9 +192,12 @@ const AllPatients = () => {
                 }
                 if (accessor === "action") {
                   return (
-                    <button className="text-[#7c69a7] font-medium text-sm">
-                      View History
-                    </button>
+                    <button
+  className="text-[#7c69a7] font-medium text-sm"
+  onClick={() => navigate(`/view-history/${row.uid}`, { state: { patient: row } })}
+>
+  View History
+</button>
                   );
                 }
                 if (accessor === "name") {
@@ -194,6 +210,16 @@ const AllPatients = () => {
                 );
               }}
             />
+
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
           </div>
         </main>
 
@@ -227,7 +253,7 @@ const AllPatients = () => {
                     onChange={(e) => handleInputChange("alternatePhone", e.target.value)}
                     className="border px-3 py-2 rounded w-full"
                   />
-                  {(errors.alternatePhone) && (
+                  {errors.alternatePhone && (
                     <p className="text-red-500 text-xs mt-1">{errors.alternatePhone}</p>
                   )}
                 </div>

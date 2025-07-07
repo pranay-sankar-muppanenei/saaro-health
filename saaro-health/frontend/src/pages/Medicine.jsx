@@ -5,6 +5,7 @@ import Header from "../components/layout/Header";
 import GenericTable from "../components/ui/GenericTable";
 import { medicines as dummyMedicines } from "../data/MedicineDummyData";
 import Button from "../components/ui/Button";
+import Pagination from "../components/ui/Pagination"; // ✅ Import pagination
 
 const columns = [
   { label: "Name", accessor: "name" },
@@ -20,6 +21,7 @@ const Medicines = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [medicinesList, setMedicinesList] = useState(dummyMedicines);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -31,10 +33,16 @@ const Medicines = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [editIndex, setEditIndex] = useState(null);
+  const [deleteIndex, setDeleteIndex] = useState(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
-    setErrors({ ...errors, [field]: "" }); // Clear error on change
+    setErrors({ ...errors, [field]: "" });
   };
 
   const validateForm = () => {
@@ -54,15 +62,20 @@ const Medicines = () => {
       return;
     }
 
-    // Add actions field
-    const newMedicine = {
-      ...formData,
-      actions: "Edit,Delete",
-    };
+    const newMedicine = { ...formData };
 
-    setMedicinesList([newMedicine, ...medicinesList]);
+    if (editIndex !== null) {
+      const updatedList = [...medicinesList];
+      updatedList[editIndex] = newMedicine;
+      setMedicinesList(updatedList);
+    } else {
+      const newList = [newMedicine, ...medicinesList];
+      setMedicinesList(newList);
 
-    // Reset form
+      const newTotalPages = Math.ceil(newList.filter((med) => med.name.toLowerCase().includes(searchTerm.toLowerCase())).length / pageSize);
+      setCurrentPage(newTotalPages);
+    }
+
     setFormData({
       name: "",
       composition: "",
@@ -72,12 +85,30 @@ const Medicines = () => {
       createdBy: "",
     });
     setErrors({});
+    setEditIndex(null);
     setIsModalOpen(false);
   };
 
-  const filteredMedicines = medicinesList.filter((row) => {
-    return row.name.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const handleEdit = (index) => {
+    setFormData(filteredMedicines[index]);
+    setEditIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    const updatedList = [...medicinesList];
+    updatedList.splice(deleteIndex, 1);
+    setMedicinesList(updatedList);
+    setDeleteIndex(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const filteredMedicines = medicinesList.filter((row) =>
+    row.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredMedicines.length / pageSize);
+  const paginatedData = filteredMedicines.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="flex h-screen">
@@ -90,7 +121,18 @@ const Medicines = () => {
               <h2 className="text-2xl font-bold">Medicines</h2>
               <Button
                 className="bg-[#7042D9] text-black font-semibold px-4 py-2 rounded-full hover:bg-[#e0dbf6]"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setFormData({
+                    name: "",
+                    composition: "",
+                    frequency: "",
+                    dosage: "",
+                    notes: "",
+                    createdBy: "",
+                  });
+                  setEditIndex(null);
+                  setIsModalOpen(true);
+                }}
               >
                 + Add Medicine
               </Button>
@@ -103,33 +145,56 @@ const Medicines = () => {
                 placeholder=" Search Medicine"
                 className="w-full pl-10 pr-4 py-2 border rounded-xl bg-[#f1ecf9] text-[#5e3bea] focus:outline-none text-sm"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
 
-            <div className="overflow-x-auto border border-gray-200 rounded-xl">
+            <div className="overflow-x-auto  rounded-xl">
               <GenericTable
                 columns={columns}
-                data={filteredMedicines}
+                data={paginatedData.map((med, index) => ({
+                  ...med,
+                  actions: (
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleEdit((currentPage - 1) * pageSize + index)}
+                        className="text-blue-600 font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDeleteIndex((currentPage - 1) * pageSize + index);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="text-red-500 font-medium"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ),
+                }))}
                 renderCell={(row, accessor) => {
-                  if (accessor === "name") {
-                    return <span className="text-sm">{row[accessor]}</span>;
-                  }
                   if (accessor === "actions") {
-                    return (
-                      <span className="text-sm text-[#7c69a7] font-semibold">
-                        {row[accessor]}
-                      </span>
-                    );
+                    return row[accessor];
                   }
                   return <span className="text-sm text-[#7c69a7]">{row[accessor]}</span>;
                 }}
               />
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
           </div>
         </main>
 
-        {/* Modal */}
+        {/* Add/Edit Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 overflow-y-auto">
             <div className="bg-white rounded-xl shadow-lg w-full max-w-xl p-6 relative">
@@ -139,7 +204,9 @@ const Medicines = () => {
               >
                 &times;
               </button>
-              <h2 className="text-xl font-semibold mb-4">Add Medicine</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {editIndex !== null ? "Edit Medicine" : "Add Medicine"}
+              </h2>
 
               <div className="grid grid-cols-1 gap-4">
                 {["name", "composition", "frequency", "dosage", "notes", "createdBy"].map(
@@ -171,6 +238,30 @@ const Medicines = () => {
                   className="px-4 py-2 bg-[#5e3bea] text-white rounded-md"
                 >
                   Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete confirm modal */}
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 relative">
+              <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+              <p>Are you sure you want to delete this medicine?</p>
+              <div className="flex justify-end gap-4 mt-6">
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md"
+                >
+                  Delete
                 </button>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
@@ -6,6 +6,7 @@ import GenericTable from "../components/ui/GenericTable";
 import Button from "../components/ui/Button";
 import { rxData as initialRxData } from "../data/RxDummyData";
 import { Link } from "react-router-dom";
+import Pagination from "../components/ui/Pagination"; // We'll define this below
 
 const columns = [
   { label: "UID", accessor: "uid" },
@@ -30,12 +31,23 @@ const CreateRx = () => {
     category: "Follow-up",
   });
   const [errors, setErrors] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 7;
 
   const filteredData = rxData.filter((row) =>
     Object.values(row).some((val) =>
       val.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, rxData]);
 
   const handleRegisterPatient = () => setIsModalOpen(true);
 
@@ -99,7 +111,7 @@ const CreateRx = () => {
 
             <GenericTable
               columns={columns}
-              data={filteredData}
+              data={currentRows}
               renderCell={(row, accessor) => {
                 if (accessor === "category") {
                   const colorMap = {
@@ -131,6 +143,16 @@ const CreateRx = () => {
                 return <span className={`text-sm ${highlightColor}`}>{row[accessor]}</span>;
               }}
             />
+
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
           </div>
         </main>
 

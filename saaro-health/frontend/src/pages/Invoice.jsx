@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import KPISection from "../components/ui/KpiSection";
 import GenericTable from "../components/ui/GenericTable";
 import Button from "../components/ui/Button";
-
-import { FiSearch } from "react-icons/fi";
-import { IoIosArrowDown } from "react-icons/io";
+import Pagination from "../components/ui/Pagination";
 import { INVOICE_KPIS, invoicesData as initialInvoicesData } from "../data/InvoiceDummyData";
-
-const dateOptions = ["All", "Last 30 days", "Last 90 days"];
-const statusOptions = ["All", "Paid", "Unpaid", "Partially Paid"];
-const modeOptions = ["All", "Cash", "UPI", "Card", "Insurance"];
 
 const columns = [
   { label: "Invoice ID", accessor: "id" },
@@ -30,10 +23,14 @@ const Invoice = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [modeFilter, setModeFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 7;
 
   const [invoicesData, setInvoicesData] = useState(initialInvoicesData);
 
-  const [formData, setFormData] = useState({
+  const emptyForm = {
     uid: "",
     name: "",
     phone: "",
@@ -43,7 +40,9 @@ const Invoice = () => {
     additionalDiscount: "",
     paymentMode: "Cash",
     patientNote: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(emptyForm);
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -60,7 +59,7 @@ const Invoice = () => {
     setFormData({ ...formData, services: updatedServices });
   };
 
-  const handleCreateInvoice = () => {
+  const handleCreateOrUpdateInvoice = () => {
     if (formData.name.trim().length < 3) {
       alert("Name should be at least 3 characters long");
       return;
@@ -74,28 +73,52 @@ const Invoice = () => {
       return sum + (s.qty * s.amount - s.discount);
     }, 0) - parseFloat(formData.additionalDiscount || 0);
 
-    const newInvoice = {
-      id: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: formData.name,
-      date: new Date().toISOString().split("T")[0],
-      amount: total,
-      status: formData.paymentStatus,
-      mode: formData.paymentMode,
-    };
+    if (isEditing) {
+      const updatedInvoices = invoicesData.map((inv) =>
+        inv.id === editingInvoiceId
+          ? {
+              ...inv,
+              name: formData.name,
+              amount: total,
+              status: formData.paymentStatus,
+              mode: formData.paymentMode,
+            }
+          : inv
+      );
+      setInvoicesData(updatedInvoices);
+    } else {
+      const newInvoice = {
+        id: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+        name: formData.name,
+        date: new Date().toISOString().split("T")[0],
+        amount: total,
+        status: formData.paymentStatus,
+        mode: formData.paymentMode,
+      };
+      setInvoicesData([newInvoice, ...invoicesData]);
+    }
 
-    setInvoicesData([newInvoice, ...invoicesData]);
     setIsModalOpen(false);
+    setIsEditing(false);
+    setEditingInvoiceId(null);
+    setFormData(emptyForm);
+  };
+
+  const openEditModal = (invoice) => {
     setFormData({
       uid: "",
-      name: "",
+      name: invoice.name,
       phone: "",
-      paymentStatus: "Billed",
+      paymentStatus: invoice.status,
       privateNotes: "",
-      services: [{ service: "", qty: 1, amount: 0, discount: 0 }],
+      services: [{ service: "", qty: 1, amount: invoice.amount, discount: 0 }],
       additionalDiscount: "",
-      paymentMode: "Cash",
+      paymentMode: invoice.mode,
       patientNote: "",
     });
+    setEditingInvoiceId(invoice.id);
+    setIsEditing(true);
+    setIsModalOpen(true);
   };
 
   const filteredInvoices = invoicesData.filter((invoice) => {
@@ -123,6 +146,11 @@ const Invoice = () => {
     return searchMatch && dateMatch && statusMatch && modeMatch;
   });
 
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentInvoices = filteredInvoices.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(filteredInvoices.length / rowsPerPage);
+
   return (
     <div className="flex h-screen">
       <Sidebar />
@@ -132,18 +160,25 @@ const Invoice = () => {
           <div className="max-w-7xl mx-auto space-y-10">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-semibold text-[#322e45]">Invoices</h1>
-              <Button onClick={() => setIsModalOpen(true)} className="px-5 text-sm font-medium shadow">
+              <Button
+                onClick={() => {
+                  setIsModalOpen(true);
+                  setIsEditing(false);
+                  setFormData(emptyForm);
+                }}
+                className="px-5 text-sm font-medium shadow"
+              >
                 + Create Invoice
               </Button>
             </div>
 
             <div className="bg-[#f9f6ff] p-4 rounded-xl">
-  <KPISection kpis={INVOICE_KPIS} />
-</div>
+              <KPISection kpis={INVOICE_KPIS} />
+            </div>
 
             <GenericTable
               columns={columns}
-              data={filteredInvoices}
+              data={currentInvoices}
               renderCell={(row, accessor) => {
                 if (accessor === "status") {
                   return <span className="text-sm px-3 py-1">{row.status}</span>;
@@ -153,103 +188,117 @@ const Invoice = () => {
                 }
                 if (accessor === "action") {
                   return (
-                    <Link to={`/invoice/${row.id}`}>
-                      <button className="text-[#5e3bea] hover:underline text-sm font-medium">View</button>
-                    </Link>
+                    <button
+                      className="text-[#5e3bea] hover:underline text-sm font-medium"
+                      onClick={() => openEditModal(row)}
+                    >
+                      View / Edit
+                    </button>
                   );
                 }
                 return <span className="text-sm text-gray-800">{row[accessor]}</span>;
               }}
             />
+
+            {/* Pagination Component */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </main>
 
         {isModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-[#fefefe] rounded-xl shadow-xl w-full max-w-5xl p-8 relative">
-      <button
-        onClick={() => setIsModalOpen(false)}
-        className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-black"
-      >
-        &times;
-      </button>
-      <h2 className="text-2xl font-semibold mb-6 text-[#322e45]">Create Invoice</h2>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-[#fefefe] rounded-xl shadow-xl w-full max-w-5xl p-8 relative max-h-[90vh] overflow-y-auto">
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setIsEditing(false);
+                  setEditingInvoiceId(null);
+                  setFormData(emptyForm);
+                }}
+                className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-black"
+              >
+                &times;
+              </button>
+              <h2 className="text-2xl font-semibold mb-6 text-[#322e45]">
+                {isEditing ? "Edit Invoice" : "Create Invoice"}
+              </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <input placeholder="UID" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.uid} onChange={(e) => handleInputChange("uid", e.target.value)} />
-        <input placeholder="Name" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
-        <input placeholder="Phone" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} />
-        <select className="border border-gray-300 px-4 py-2 rounded-md" value={formData.paymentStatus} onChange={(e) => handleInputChange("paymentStatus", e.target.value)}>
-          <option>Billed</option>
-          <option>Unbilled</option>
-          <option>Partially Paid</option>
-        </select>
-        <input placeholder="Private Notes" className="border border-gray-300 px-4 py-2 rounded-md col-span-full" value={formData.privateNotes} onChange={(e) => handleInputChange("privateNotes", e.target.value)} />
-      </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <input placeholder="UID" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.uid} onChange={(e) => handleInputChange("uid", e.target.value)} />
+                <input placeholder="Name" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
+                <input placeholder="Phone" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} />
+                <select className="border border-gray-300 px-4 py-2 rounded-md" value={formData.paymentStatus} onChange={(e) => handleInputChange("paymentStatus", e.target.value)}>
+                  <option>Billed</option>
+                  <option>Unbilled</option>
+                  <option>Partially Paid</option>
+                </select>
+                <input placeholder="Private Notes" className="border border-gray-300 px-4 py-2 rounded-md col-span-full" value={formData.privateNotes} onChange={(e) => handleInputChange("privateNotes", e.target.value)} />
+              </div>
 
-      <div className="mt-8">
-        <div className="grid grid-cols-4 gap-4 font-medium text-sm text-gray-600 mb-2">
-          <span>Service</span>
-          <span>Qty</span>
-          <span>Amount</span>
-          <span>Discount</span>
-        </div>
-        {formData.services.map((s, idx) => (
-          <div key={idx} className="grid grid-cols-4 gap-4 mb-2">
-            <input placeholder="Service" className="border border-gray-300 px-3 py-2 rounded-md" value={s.service} onChange={(e) => handleServiceChange(idx, "service", e.target.value)} />
-            <input placeholder="Qty" type="number" className="border border-gray-300 px-3 py-2 rounded-md" value={s.qty} onChange={(e) => handleServiceChange(idx, "qty", parseInt(e.target.value) || 0)} />
-            <input placeholder="Amount" type="number" className="border border-gray-300 px-3 py-2 rounded-md" value={s.amount} onChange={(e) => handleServiceChange(idx, "amount", parseFloat(e.target.value) || 0)} />
-            <input placeholder="Discount" type="number" className="border border-gray-300 px-3 py-2 rounded-md" value={s.discount} onChange={(e) => handleServiceChange(idx, "discount", parseFloat(e.target.value) || 0)} />
+              <div className="mt-8">
+                <div className="grid grid-cols-4 gap-4 font-medium text-sm text-gray-600 mb-2">
+                  <span>Service</span>
+                  <span>Qty</span>
+                  <span>Amount</span>
+                  <span>Discount</span>
+                </div>
+                {formData.services.map((s, idx) => (
+                  <div key={idx} className="grid grid-cols-4 gap-4 mb-2">
+                    <input placeholder="Service" className="border border-gray-300 px-3 py-2 rounded-md" value={s.service} onChange={(e) => handleServiceChange(idx, "service", e.target.value)} />
+                    <input placeholder="Qty" inputMode="numeric" pattern="[0-9]*" className="border border-gray-300 px-3 py-2 rounded-md" value={s.qty} onChange={(e) => handleServiceChange(idx, "qty", parseInt(e.target.value) || 0)} />
+                    <input placeholder="Amount" inputMode="numeric" pattern="[0-9]*" className="border border-gray-300 px-3 py-2 rounded-md" value={s.amount} onChange={(e) => handleServiceChange(idx, "amount", parseFloat(e.target.value) || 0)} />
+                    <input placeholder="Discount" inputMode="numeric" pattern="[0-9]*" className="border border-gray-300 px-3 py-2 rounded-md" value={s.discount} onChange={(e) => handleServiceChange(idx, "discount", parseFloat(e.target.value) || 0)} />
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <input placeholder="Additional Discount" inputMode="numeric" pattern="[0-9]*" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.additionalDiscount} onChange={(e) => handleInputChange("additionalDiscount", parseFloat(e.target.value) || 0)} />
+                <select className="border border-gray-300 px-4 py-2 rounded-md" value={formData.paymentMode} onChange={(e) => handleInputChange("paymentMode", e.target.value)}>
+                  <option>Cash</option>
+                  <option>Credit Card</option>
+                  <option>UPI</option>
+                  <option>Online</option>
+                </select>
+              </div>
+
+              <textarea placeholder="Patient Note" className="border border-gray-300 px-4 py-2 rounded-md mt-4 w-full resize-none" value={formData.patientNote} onChange={(e) => handleInputChange("patientNote", e.target.value)} />
+
+              <div className="mt-6 text-right font-medium text-lg">
+                {(() => {
+                  let totalAmount = 0;
+                  formData.services.forEach((s) => {
+                    const lineTotal = (s.qty * s.amount) - s.discount;
+                    totalAmount += lineTotal > 0 ? lineTotal : 0;
+                  });
+
+                  const additionalDiscount = formData.additionalDiscount || 0;
+                  const grandTotal = totalAmount - additionalDiscount > 0 ? totalAmount - additionalDiscount : 0;
+
+                  return (
+                    <div className="flex justify-between items-center w-full">
+                      <div>Total Amount: ₹ {totalAmount}</div>
+                      <div className="font-bold text-xl">Grand Total: ₹ {grandTotal}</div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              <div className="flex justify-end gap-4 mt-8">
+                <button onClick={() => setIsModalOpen(false)} className="px-5 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100">
+                  Cancel
+                </button>
+                <button onClick={handleCreateOrUpdateInvoice} className="px-5 py-2 rounded-md bg-[#6842ff] text-white hover:bg-[#472dc4]">
+                  {isEditing ? "Update Invoice" : "Create Invoice"}
+                </button>
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <input placeholder="Additional Discount" type="number" className="border border-gray-300 px-4 py-2 rounded-md" value={formData.additionalDiscount} onChange={(e) => handleInputChange("additionalDiscount", parseFloat(e.target.value) || 0)} />
-        <select className="border border-gray-300 px-4 py-2 rounded-md" value={formData.paymentMode} onChange={(e) => handleInputChange("paymentMode", e.target.value)}>
-          <option>Cash</option>
-          <option>Credit Card</option>
-          <option>UPI</option>
-          <option>Online</option>
-        </select>
-      </div>
-
-      <textarea placeholder="Patient Note" className="border border-gray-300 px-4 py-2 rounded-md mt-4 w-full resize-none" value={formData.patientNote} onChange={(e) => handleInputChange("patientNote", e.target.value)} />
-
-      {/* --- Total and Grand Total Calculation --- */}
-      <div className="mt-6 text-right font-medium text-lg">
-        {(() => {
-          let totalAmount = 0;
-          formData.services.forEach((s) => {
-            const lineTotal = (s.qty * s.amount) - s.discount;
-            totalAmount += lineTotal > 0 ? lineTotal : 0;
-          });
-
-          const additionalDiscount = formData.additionalDiscount || 0;
-          const grandTotal = totalAmount - additionalDiscount > 0 ? totalAmount - additionalDiscount : 0;
-
-          return (
-            <div className="flex justify-between items-center w-full">
-  <div>Total Amount: ₹ {totalAmount}</div>
-  <div className="font-bold text-xl">Grand Total: ₹ {grandTotal}</div>
-</div>
-
-          );
-        })()}
-      </div>
-
-      <div className="flex justify-end gap-4 mt-8">
-        <button onClick={() => setIsModalOpen(false)} className="px-5 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100">
-          Cancel
-        </button>
-        <button onClick={handleCreateInvoice} className="px-5 py-2 rounded-md bg-[#6842ff] text-white hover:bg-[#472dc4]">
-          Create Invoice
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+        )}
       </div>
     </div>
   );

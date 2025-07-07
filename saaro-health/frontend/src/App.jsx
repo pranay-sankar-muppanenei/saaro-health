@@ -20,6 +20,7 @@ import AppointmentsDashboard from "./pages/Appointments"
 import NotFoundPage from "./pages/PageNotFound"
 import Socials from "./pages/Socials";
 import Automation from "./pages/Automation"
+import PatientHistoryPage from "./pages/PatientHistoryPage";
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
         <Route path="/medicine-library" element={<ProtectedRoute><Medicines /></ProtectedRoute>} />
         <Route path="/patient-queue" element={<ProtectedRoute><PatientQueue /></ProtectedRoute>} />
         <Route path={`/:id/consult`} element={<ProtectedRoute><ConsultationForm /></ProtectedRoute>} />
+        <Route path="/view-history/:uid" element={<PatientHistoryPage />} />
         <Route path="/ipd/discharge" element={<ProtectedRoute><DischargeSummaryForm /></ProtectedRoute>} />
         <Route path='/messages' element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/social" element={<ProtectedRoute><Socials /></ProtectedRoute>} />
