@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Sidebar from '../components/layout/SideBar';
 import Header from '../components/layout/Header';
 import GenericTable from '../components/ui/GenericTable';
 import { medicineData } from '../data/ConsultDummyData';
 import { rxData } from '../data/RxDummyData';
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { RxDragHandleDots2 } from 'react-icons/rx';
 
 const columns = [
   { label: 'Medicine', accessor: 'medicine' },
@@ -14,19 +23,94 @@ const columns = [
   { label: 'Notes', accessor: 'notes' },
 ];
 
+const DraggableSection = ({ id, children, enabled }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className={`relative bg-white rounded shadow ${enabled ? 'border-2 border-dashed border-[#7047d1]' : ''} p-4`}>
+      <div className="flex justify-start gap-2">
+        {enabled && (
+          <div {...attributes} {...listeners} className="cursor-grab text-[#7047d1]">
+            <RxDragHandleDots2 size={20} />
+          </div>
+        )}
+        <div className="flex-1">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+const DEFAULT_SECTION_ORDER = [
+  'complaints',
+  'history',
+  'examination',
+  'diagnosis',
+  'investigations',
+  'medication',
+  'advice',
+  'followUp'
+];
+
+const STORAGE_KEY = 'consult-section-order';
+const COMPLAINTS_KEY = 'complaints-data';
+const MEDICATION_KEY = 'medication-data';
+
+
+
 const ConsultationForm = () => {
   const { id } = useParams();
   const patient = rxData.find((p) => p.uid === id);
+  const uuid = () => Math.random().toString(36).slice(2);
 
-  const [formData, setFormData] = useState({
+
+const [formData, setFormData] = useState(() => {
+  // Try to load saved complaints from localStorage
+  const storedComplaints = localStorage.getItem(COMPLAINTS_KEY);
+  let complaints = [{ id: crypto.randomUUID(), text: '' }]; // default complaint input
+
+  if (storedComplaints) {
+    try {
+      const parsed = JSON.parse(storedComplaints);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        complaints = parsed;
+      }
+    } catch (error) {
+      console.error("Failed to parse stored complaints:", error);
+    }
+  }
+  const storedMeds = localStorage.getItem(MEDICATION_KEY);
+let medication = [{ id: crypto.randomUUID(), name: '', dosage: '', frequency: '', duration: '', notes: '' }];
+if (storedMeds) {
+  try {
+    const parsed = JSON.parse(storedMeds);
+    if (Array.isArray(parsed) && parsed.length > 0) medication = parsed;
+  } catch {}
+}
+
+
+  return {
     vitals: {
       bp: '', pulse: '', height: '', weight: '', temperature: '', spo2: '', rbs: ''
     },
-    complaints: ['', '', ''],
+    complaints,
+    medication,
     pastHistory: '',
     surgicalHistory: '',
     drugAllergy: '',
-    physicalExamination: ['', '', ''],
+    physicalExamination: (() => {
+  const saved = localStorage.getItem('physical-examination');
+  try {
+    const parsed = JSON.parse(saved);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  } catch {}
+  return [{ id: crypto.randomUUID(), text: '' }];
+})(),
+
     diagnosis: {
       provisional: ['', ''],
       final: ['', '']
@@ -35,7 +119,353 @@ const ConsultationForm = () => {
     testNotes: ['', ''],
     advice: '',
     followUp: ['', '']
-  });
+  };
+});
+
+
+  const [isConfigMode, setIsConfigMode] = useState(false);
+  const [sectionOrder, setSectionOrder] = useState(DEFAULT_SECTION_ORDER);
+
+  // Load persisted order
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setSectionOrder(parsed);
+      } catch {}
+    }
+     const storedComplaints = localStorage.getItem(COMPLAINTS_KEY);
+  if (storedComplaints) {
+    try {
+      const parsed = JSON.parse(storedComplaints);
+      if (Array.isArray(parsed)) {
+        setFormData((prev) => ({ ...prev, complaints: parsed }));
+      }
+    } catch {}
+  }
+  }, []);
+useEffect(() => {
+  let complaintsToSave = [...formData.complaints];
+
+  // Remove last empty one only if there's more than one
+  if (
+    complaintsToSave.length > 1 &&
+    complaintsToSave[complaintsToSave.length - 1].text.trim() === ''
+  ) {
+    complaintsToSave.pop();
+  }
+
+  // Always ensure at least one input
+  if (complaintsToSave.length === 0) {
+    complaintsToSave = [{ id: crypto.randomUUID(), text: '' }];
+  }
+
+  localStorage.setItem(COMPLAINTS_KEY, JSON.stringify(complaintsToSave));
+}, [formData.complaints]);
+
+useEffect(() => {
+  let meds = [...formData.medication];
+  if (
+    meds.length > 1 &&
+    Object.values(meds[meds.length - 1])
+      .filter((v, i) => i !== 0) // skip `id`
+      .every((val) => val.trim?.() === '')
+  ) {
+    meds.pop();
+  }
+  if (meds.length === 0) {
+    meds = [{ id: crypto.randomUUID(), name: '', dosage: '', frequency: '', duration: '', notes: '' }];
+  }
+  localStorage.setItem(MEDICATION_KEY, JSON.stringify(meds));
+}, [formData.medication]);
+useEffect(() => {
+  let list = [...formData.physicalExamination];
+  if (
+    list.length > 1 &&
+    list.at(-1).text.trim() === ''
+  ) {
+    list.pop();
+  }
+  if (list.length === 0) {
+    list = [{ id: crypto.randomUUID(), text: '' }];
+  }
+  localStorage.setItem('physical-examination', JSON.stringify(list));
+}, [formData.physicalExamination]);
+
+
+
+  const updateSectionOrder = (newOrder) => {
+    setSectionOrder(newOrder);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newOrder));
+  };
+
+  const sections = useMemo(() => ({
+   complaints: (
+  <DraggableSection key="complaints" id="complaints" enabled={isConfigMode}>
+    <div>
+      <div className="font-semibold mb-4 text-[22px]">Chief Complaints</div>
+
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={({ active, over }) => {
+          if (!over) return;
+          if (active.id !== over.id) {
+            const oldIndex = formData.complaints.findIndex((c) => c.id === active.id);
+            const newIndex = formData.complaints.findIndex((c) => c.id === over.id);
+            const newList = arrayMove(formData.complaints, oldIndex, newIndex);
+            setFormData({ ...formData, complaints: newList });
+          }
+        }}
+      >
+        <SortableContext
+          items={formData.complaints.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {formData.complaints.map((complaint, i) => (
+            <SortableComplaintInput
+              key={complaint.id}
+              id={complaint.id}
+              index={i}
+                label="Complaint"
+              value={complaint.text}
+              onChange={(val) => {
+                const updated = [...formData.complaints];
+                updated[i] = { ...updated[i], text: val };
+                if (i === updated.length - 1 && val.trim() !== '') {
+                  updated.push({ id: crypto.randomUUID(), text: '' });
+                }
+                setFormData({ ...formData, complaints: updated });
+              }}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  </DraggableSection>
+)
+,
+
+    history: (
+      <DraggableSection key="history" id="history" enabled={isConfigMode}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {['Past History', 'Surgical History', 'Drug Allergy'].map((label) => {
+            const key = label.toLowerCase().replace(/ /g, '');
+            return (
+              <div className="flex flex-col" key={key}>
+                <label className="mb-1 font-medium">{label}</label>
+                <input
+                  value={formData[key]}
+                  onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                  placeholder={`Enter ${label.toLowerCase()}`}
+                  className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </DraggableSection>
+    ),
+  // adjust path if needed
+
+examination: (
+  <DraggableSection key="examination" id="examination" enabled={isConfigMode}>
+    <div>
+      <div className="font-semibold mb-4 text-[22px]">Physical Examination</div>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={({ active, over }) => {
+          if (!over) return;
+          if (active.id !== over.id) {
+            const oldIndex = formData.physicalExamination.findIndex((c) => c.id === active.id);
+            const newIndex = formData.physicalExamination.findIndex((c) => c.id === over.id);
+            const newList = arrayMove(formData.physicalExamination, oldIndex, newIndex);
+            setFormData({ ...formData, physicalExamination: newList });
+          }
+        }}
+      >
+        <SortableContext
+          items={formData.physicalExamination.map((item) => item.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {formData.physicalExamination.map((exam, i) => (
+            <SortableComplaintInput
+              key={exam.id}
+              id={exam.id}
+              index={i}
+              value={exam.text}
+              label="Observation"
+              onChange={(val) => {
+                const updated = [...formData.physicalExamination];
+                updated[i] = { ...updated[i], text: val };
+                if (i === updated.length - 1 && val.trim() !== '') {
+                  updated.push({ id: crypto.randomUUID(), text: '' });
+                }
+                setFormData({ ...formData, physicalExamination: updated });
+              }}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  </DraggableSection>
+),
+
+
+    diagnosis: (
+      <DraggableSection key="diagnosis" id="diagnosis" enabled={isConfigMode}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {["provisional", "final"].map((type) => (
+            <div key={type}>
+              <div className="font-semibold mb-4 text-[22px]">{type[0].toUpperCase() + type.slice(1)} Diagnosis</div>
+              {formData.diagnosis[type].map((text, i) => (
+                <div key={i} className="flex flex-col mt-2">
+                  <label className="mb-1 font-medium">{type} {i + 1}</label>
+                  <input
+                    value={text}
+                    onChange={(e) => {
+                      const updated = [...formData.diagnosis[type]];
+                      updated[i] = e.target.value;
+                      setFormData({
+                        ...formData,
+                        diagnosis: { ...formData.diagnosis, [type]: updated },
+                      });
+                    }}
+                    placeholder={`Enter ${type} diagnosis`}
+                    className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </DraggableSection>
+    ),
+    investigations: (
+      <DraggableSection key="investigations" id="investigations" enabled={isConfigMode}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {formData.tests.map((test, i) => (
+            <div key={i} className="flex flex-col">
+              <label className="mb-1 font-medium">Test {i + 1}</label>
+              <input
+                value={test}
+                onChange={(e) => {
+                  const updated = [...formData.tests];
+                  updated[i] = e.target.value;
+                  setFormData({ ...formData, tests: updated });
+                }}
+                placeholder="Enter Test"
+                className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
+              />
+            </div>
+          ))}
+          {formData.testNotes.map((note, i) => (
+            <div key={i} className="flex flex-col">
+              <label className="mb-1 font-medium">Test Note {i + 1}</label>
+              <input
+                value={note}
+                onChange={(e) => {
+                  const updated = [...formData.testNotes];
+                  updated[i] = e.target.value;
+                  setFormData({ ...formData, testNotes: updated });
+                }}
+                placeholder="Note for Lab"
+                className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
+              />
+            </div>
+          ))}
+        </div>
+      </DraggableSection>
+    ),
+    medication: (
+  <DraggableSection key="medication" id="medication" enabled={isConfigMode}>
+    <div>
+      <div className="font-semibold mb-4 text-[22px]">Medication / Prescription</div>
+      <div className="overflow-x-auto border rounded-xl">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-[#ede3fd] text-[#7047d1]">
+            <tr>
+              <th className="px-4 py-2 text-left">Name</th>
+              <th className="px-4 py-2 text-left">Dosage</th>
+              <th className="px-4 py-2 text-left">Frequency</th>
+              <th className="px-4 py-2 text-left">Duration</th>
+              <th className="px-4 py-2 text-left">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {formData.medication.map((med, index) => (
+              <tr key={med.id} className="bg-white">
+                {['name', 'dosage', 'frequency', 'duration', 'notes'].map((field) => (
+                  <td key={field} className="px-4 py-2">
+                    <input
+                      className="w-full p-2 border rounded bg-gray-50"
+                      placeholder={`Enter ${field}`}
+                      value={med[field]}
+                      onChange={(e) => {
+                        const updated = [...formData.medication];
+                        updated[index] = { ...updated[index], [field]: e.target.value };
+
+                        const isLast = index === updated.length - 1;
+                        const hasText = e.target.value.trim() !== '';
+
+                        if (isLast && hasText) {
+                          updated.push({
+                            id: crypto.randomUUID(),
+                            name: '', dosage: '', frequency: '', duration: '', notes: ''
+                          });
+                        }
+
+                        setFormData({ ...formData, medication: updated });
+                      }}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </DraggableSection>
+),
+
+    advice: (
+      <DraggableSection key="advice" id="advice" enabled={isConfigMode}>
+        <div className="flex flex-col">
+          <label className="mb-1 font-medium mb-4 text-[22px]">Advice</label>
+          <textarea
+            value={formData.advice}
+            onChange={(e) => setFormData({ ...formData, advice: e.target.value })}
+            placeholder="Enter advice"
+            className="w-full border p-2 rounded bg-gray-100 placeholder-[#69578F]"
+            rows={6}
+          />
+        </div>
+      </DraggableSection>
+    ),
+    followUp: (
+      <DraggableSection key="followUp" id="followUp" enabled={isConfigMode}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {formData.followUp.map((val, i) => (
+            <div key={i} className="flex flex-col">
+              <label className="mb-1 font-medium mb-4 text-[22px]">Follow-up after</label>
+              <input
+                type="date"
+                value={val}
+                placeholder="Select Date"
+                onChange={(e) => {
+                  const updated = [...formData.followUp];
+                  updated[i] = e.target.value;
+                  setFormData({ ...formData, followUp: updated });
+                }}
+                className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
+              />
+            </div>
+          ))}
+        </div>
+      </DraggableSection>
+    ),
+  }), [formData, isConfigMode]);
 
   return (
     <div className="flex h-screen">
@@ -45,23 +475,24 @@ const ConsultationForm = () => {
         <main className="flex-1 p-2 bg-white overflow-y-auto">
           <div className="max-w-[90%] mx-auto py-8 space-y-10">
             <div className="max-w-6xl mx-auto space-y-6 font-sans text-sm">
-              <div className="text-xl font-semibold">
-                <div className='flex flex-row justify-between'>
-                  <div>
-                    <h1 className='text-2xl font-semibold'>Consultation for {patient?.name || "Unknown"}</h1>
-                    <p className='text-sm text-[#69578F] text-400'>
-                      UID: {patient?.uid || "N/A"} | Name: {patient?.name || "N/A"} | Age: {patient?.age || "N/A"}
-                    </p>
-                  </div>
-                  <img
-                    src={patient?.img || "/Ava Evans.png"}
-                    alt="Patient"
-                    className="h-[160px] w-[300px] object-cover rounded"
-                  />
-                </div>
-              </div>
+              <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-semibold">Consultation for {patient?.name || 'Unknown'}</h1>
+                <button
+                  onClick={() => setIsConfigMode(!isConfigMode)}
+                  className="bg-[#7047d1] text-white px-4 py-2 rounded-xl"
 
-              {/* Vitals */}
+                >
+                  {isConfigMode ? 'Done' : 'Configure Sections'}
+                </button>
+              </div>
+              <p className='text-sm text-[#69578F]'>UID: {patient?.uid || "N/A"} | Age: {patient?.age || "N/A"}</p>
+              <img
+                src={patient?.img || "/Ava Evans.png"}
+                alt="Patient"
+                className="h-[160px] w-[300px] object-cover rounded"
+              />
+
+              {/* Fixed Vitals Section */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {Object.entries(formData.vitals).map(([key, value]) => (
                   <div key={key} className="flex flex-col">
@@ -81,196 +512,23 @@ const ConsultationForm = () => {
                 ))}
               </div>
 
-              {/* Chief Complaints */}
-              <div>
-                <div className="font-semibold mb-2">Chief Complaints</div>
-                {formData.complaints.map((complaint, i) => (
-                  <div key={i} className="flex flex-col mt-2">
-                    <label className="mb-1 font-medium">Complaint {i + 1}</label>
-                    <input
-                      value={complaint}
-                      onChange={(e) => {
-                        const updated = [...formData.complaints];
-                        updated[i] = e.target.value;
-                        setFormData({ ...formData, complaints: updated });
-                      }}
-                      placeholder="Enter Complaint"
-                      className="border p-2 rounded bg-gray-100 placeholder-[#69578F]" 
-                    />
-                  </div>
-                ))}
-              </div>
+              <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={(event) => {
+                  const { active, over } = event;
+                  if (active.id !== over?.id) {
+                    const oldIndex = sectionOrder.indexOf(active.id);
+                    const newIndex = sectionOrder.indexOf(over.id);
+                    const newOrder = arrayMove(sectionOrder, oldIndex, newIndex);
+                    updateSectionOrder(newOrder);
+                  }
+                }}
+              >
+                <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
+                  {sectionOrder.map((sectionKey) => sections[sectionKey])}
+                </SortableContext>
+              </DndContext>
 
-              {/* Medical History */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col">
-                  <label className="mb-1 font-medium">Past History</label>
-                  <input
-                    value={formData.pastHistory}
-                    onChange={(e) => setFormData({ ...formData, pastHistory: e.target.value })}
-                    placeholder="Enter past medical history"
-                    className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="mb-1 font-medium">Surgical History</label>
-                  <input
-                    value={formData.surgicalHistory}
-                    onChange={(e) => setFormData({ ...formData, surgicalHistory: e.target.value })}
-                    placeholder="Enter surgical history"
-                    className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="mb-1 font-medium">Drug Allergy</label>
-                  <input
-                    value={formData.drugAllergy}
-                    onChange={(e) => setFormData({ ...formData, drugAllergy: e.target.value })}
-                    placeholder="Enter drug allergies"
-                    className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                  />
-                </div>
-              </div>
-
-              {/* Physical Examination */}
-              <div>
-                <div className="font-semibold mb-2">Physical Examination</div>
-                {formData.physicalExamination.map((exam, i) => (
-                  <div key={i} className="flex flex-col mt-2">
-                    <label className="mb-1 font-medium">Observation {i + 1}</label>
-                    <input
-                      value={exam}
-                      onChange={(e) => {
-                        const updated = [...formData.physicalExamination];
-                        updated[i] = e.target.value;
-                        setFormData({ ...formData, physicalExamination: updated });
-                      }}
-                      placeholder="Enter Observation"
-                      className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Diagnosis */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="font-semibold mb-2">Provisional Diagnosis</div>
-                  {formData.diagnosis.provisional.map((text, i) => (
-                    <div key={i} className="flex flex-col mt-2">
-                      <label className="mb-1 font-medium">Provisional {i + 1}</label>
-                      <input
-                        value={text}
-                        onChange={(e) => {
-                          const updated = [...formData.diagnosis.provisional];
-                          updated[i] = e.target.value;
-                          setFormData({
-                            ...formData,
-                            diagnosis: { ...formData.diagnosis, provisional: updated }
-                          });
-                        }}
-                        placeholder="Enter Provisional Diagnosis"
-                        className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <div className="font-semibold mb-2">Final Diagnosis</div>
-                  {formData.diagnosis.final.map((text, i) => (
-                    <div key={i} className="flex flex-col mt-2">
-                      <label className="mb-1 font-medium">Final {i + 1}</label>
-                      <input
-                        value={text}
-                        onChange={(e) => {
-                          const updated = [...formData.diagnosis.final];
-                          updated[i] = e.target.value;
-                          setFormData({
-                            ...formData,
-                            diagnosis: { ...formData.diagnosis, final: updated }
-                          });
-                        }}
-                        placeholder="Enter Final Diagnosis"
-                        className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Investigations */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {formData.tests.map((test, i) => (
-                  <div key={i} className="flex flex-col">
-                    <label className="mb-1 font-medium">Test {i + 1}</label>
-                    <input
-                      value={test}
-                      onChange={(e) => {
-                        const updated = [...formData.tests];
-                        updated[i] = e.target.value;
-                        setFormData({ ...formData, tests: updated });
-                      }}
-                      placeholder="Enter Test"
-                      className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                    />
-                  </div>
-                ))}
-                {formData.testNotes.map((note, i) => (
-                  <div key={i} className="flex flex-col">
-                    <label className="mb-1 font-medium">Test Note {i + 1}</label>
-                    <input
-                      value={note}
-                      onChange={(e) => {
-                        const updated = [...formData.testNotes];
-                        updated[i] = e.target.value;
-                        setFormData({ ...formData, testNotes: updated });
-                      }}
-                      placeholder="Note for Lab"
-                      className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Medication Table */}
-              <div>
-                <div className="font-semibold mb-2">Medication / Prescription</div>
-                <GenericTable columns={columns} data={medicineData} />
-              </div>
-
-              {/* Advice */}
-              <div className="flex flex-col">
-                <label className="mb-1 font-medium">Advice</label>
-                <textarea
-                  value={formData.advice}
-                  onChange={(e) => setFormData({ ...formData, advice: e.target.value })}
-                  placeholder="Enter advice"
-                  className="w-full border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                  rows={6}
-                />
-              </div>
-
-              {/* Follow-up */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {formData.followUp.map((val, i) => (
-                  <div key={i} className="flex flex-col">
-                    <label className="mb-1 font-medium">Follow-up after</label>
-                    <input
-                      type="date"
-                      value={val}
-                      placeholder="Select Date"
-                      onChange={(e) => {
-                        const updated = [...formData.followUp];
-                        updated[i] = e.target.value;
-                        setFormData({ ...formData, followUp: updated });
-                      }}
-                      className="border p-2 rounded bg-gray-100 placeholder-[#69578F]"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Action Buttons */}
               <div className="flex gap-4 mt-4">
                 <button className="bg-[#7047d1] text-white px-4 py-2 rounded-2xl">Save & Finalize</button>
                 <button className="bg-gray-200 px-4 py-2 rounded">Print Prescription</button>
@@ -285,3 +543,31 @@ const ConsultationForm = () => {
 };
 
 export default ConsultationForm;
+
+const SortableComplaintInput = ({ id, index, value, onChange, label = "Complaint" }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    marginBottom: '1rem'
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-start gap-2">
+      <div {...attributes} {...listeners} className="cursor-grab text-[#7047d1] mt-2">
+        <RxDragHandleDots2 size={20} />
+      </div>
+      <div className="flex-1">
+        <label className="mb-1 font-medium block">{label} {index + 1}</label>
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={`Enter ${label}`}
+          className="w-full border p-2 rounded bg-gray-100 placeholder-[#69578F]"
+        />
+      </div>
+    </div>
+  );
+};
+
