@@ -70,27 +70,53 @@ const ConsultationForm = () => {
 
 const [formData, setFormData] = useState(() => {
   // Try to load saved complaints from localStorage
-  const storedComplaints = localStorage.getItem(COMPLAINTS_KEY);
-  let complaints = [{ id: crypto.randomUUID(), text: '' }]; // default complaint input
+ let complaints = [{ id: crypto.randomUUID(), text: '' }];
 
-  if (storedComplaints) {
-    try {
-      const parsed = JSON.parse(storedComplaints);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        complaints = parsed;
-      }
-    } catch (error) {
-      console.error("Failed to parse stored complaints:", error);
-    }
-  }
-  const storedMeds = localStorage.getItem(MEDICATION_KEY);
-let medication = [{ id: crypto.randomUUID(), name: '', dosage: '', frequency: '', duration: '', notes: '' }];
-if (storedMeds) {
+const storedComplaints = localStorage.getItem(COMPLAINTS_KEY);
+if (storedComplaints) {
   try {
-    const parsed = JSON.parse(storedMeds);
-    if (Array.isArray(parsed) && parsed.length > 0) medication = parsed;
-  } catch {}
+    const parsed = JSON.parse(storedComplaints);
+    if (Array.isArray(parsed)) {
+      const cleaned = parsed.filter(c => c.text.trim() !== '');
+      if (cleaned.length === 0) {
+        complaints = [{ id: crypto.randomUUID(), text: '' }];
+      } else {
+        complaints = [...cleaned, { id: crypto.randomUUID(), text: '' }];
+      }
+    }
+  } catch {
+    // fallback is already one input
+  }
 }
+
+
+
+
+  const storedPhysicalOrder = localStorage.getItem('physical-order');
+  let physicalExamination = [{ id: crypto.randomUUID(), text: '' }];
+  if (storedPhysicalOrder) {
+    try {
+      const ids = JSON.parse(storedPhysicalOrder);
+      if (Array.isArray(ids) && ids.length > 0) {
+        physicalExamination = ids.map((id) => ({ id, text: '' }));
+      }
+    } catch {}
+  }
+  const storedMedOrder = localStorage.getItem('medication-order');
+  let medication = [{ id: crypto.randomUUID(), name: '', dosage: '', frequency: '', duration: '', notes: '' }];
+
+  if (storedMedOrder) {
+    try {
+      const ids = JSON.parse(storedMedOrder);
+      if (Array.isArray(ids) && ids.length > 0) {
+        medication = ids.map((id) => ({
+          id,
+          name: '', dosage: '', frequency: '', duration: '', notes: ''
+        }));
+      }
+    } catch {}
+  }
+
 
 
   return {
@@ -102,14 +128,7 @@ if (storedMeds) {
     pastHistory: '',
     surgicalHistory: '',
     drugAllergy: '',
-    physicalExamination: (() => {
-  const saved = localStorage.getItem('physical-examination');
-  try {
-    const parsed = JSON.parse(saved);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-  } catch {}
-  return [{ id: crypto.randomUUID(), text: '' }];
-})(),
+    physicalExamination,
 
     diagnosis: {
       provisional: ['', ''],
@@ -146,52 +165,50 @@ if (storedMeds) {
   }
   }, []);
 useEffect(() => {
-  let complaintsToSave = [...formData.complaints];
-
-  // Remove last empty one only if there's more than one
-  if (
-    complaintsToSave.length > 1 &&
-    complaintsToSave[complaintsToSave.length - 1].text.trim() === ''
-  ) {
-    complaintsToSave.pop();
+  const storedComplaints = localStorage.getItem(COMPLAINTS_KEY);
+  if (storedComplaints) {
+    try {
+      const parsed = JSON.parse(storedComplaints);
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter(c => c.text.trim() !== '');
+        const complaintsToUse = cleaned.length === 0
+          ? [{ id: crypto.randomUUID(), text: '' }]
+          : [...cleaned, { id: crypto.randomUUID(), text: '' }];
+        setFormData((prev) => ({ ...prev, complaints: complaintsToUse }));
+      }
+    } catch {}
   }
+}, []);
 
-  // Always ensure at least one input
-  if (complaintsToSave.length === 0) {
-    complaintsToSave = [{ id: crypto.randomUUID(), text: '' }];
-  }
 
-  localStorage.setItem(COMPLAINTS_KEY, JSON.stringify(complaintsToSave));
-}, [formData.complaints]);
+
 
 useEffect(() => {
   let meds = [...formData.medication];
+
+  // Ensure there's always at least one row
   if (
-    meds.length > 1 &&
-    Object.values(meds[meds.length - 1])
-      .filter((v, i) => i !== 0) // skip `id`
-      .every((val) => val.trim?.() === '')
+    meds.length === 0 ||
+    (
+      meds.length > 1 &&
+      Object.values(meds.at(-1))
+        .filter((v, i) => i !== 0) // skip id
+        .every((val) => val.trim?.() === '')
+    )
   ) {
     meds.pop();
   }
-  if (meds.length === 0) {
-    meds = [{ id: crypto.randomUUID(), name: '', dosage: '', frequency: '', duration: '', notes: '' }];
-  }
-  localStorage.setItem(MEDICATION_KEY, JSON.stringify(meds));
+
+  // Save only the order of IDs, not the full data
+  const ids = meds.map((m) => m.id);
+  localStorage.setItem('medication-order', JSON.stringify(ids));
 }, [formData.medication]);
+
 useEffect(() => {
-  let list = [...formData.physicalExamination];
-  if (
-    list.length > 1 &&
-    list.at(-1).text.trim() === ''
-  ) {
-    list.pop();
-  }
-  if (list.length === 0) {
-    list = [{ id: crypto.randomUUID(), text: '' }];
-  }
-  localStorage.setItem('physical-examination', JSON.stringify(list));
+  const ids = formData.physicalExamination.map((e) => e.id);
+  localStorage.setItem('physical-order', JSON.stringify(ids));
 }, [formData.physicalExamination]);
+
 
 
 
@@ -570,4 +587,3 @@ const SortableComplaintInput = ({ id, index, value, onChange, label = "Complaint
     </div>
   );
 };
-

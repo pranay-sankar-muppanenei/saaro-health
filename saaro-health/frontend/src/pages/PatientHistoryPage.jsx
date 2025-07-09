@@ -71,7 +71,7 @@ const SectionWithUpload = ({ title, buttonText, isUpload }) => {
       <div>
         <Button
           onClick={handleUploadClick}
-          className="bg-[#E6DFFF] text-[#7C69A7] hover:bg-[#d7ccf5] border border-[#7C69A7]"
+          className="bg-[#8057D6] text-[#7C69A7] hover:bg-[#d7ccf5] border border-[#7C69A7]"
         >
           {buttonText}
         </Button>
