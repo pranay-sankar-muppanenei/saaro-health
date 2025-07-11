@@ -4,6 +4,7 @@ import StatBox2 from "../components/ui/StatBox2";
 import Sidebar from "../components/layout/SideBar";
 import Header from "../components/layout/Header";
 import Button from "../components/ui/Button"
+import Modal from "../components/ui/GenericModal";
 import { stats, appointments as initialAppointments } from "../data/AppointmentsDummyData";
 
 const AppointmentsDashboard = () => {
@@ -123,8 +124,101 @@ const AppointmentsDashboard = () => {
           </div>
         </main>
 
-        {/* Modal */}
-        {isModalOpen && (
+       
+        
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Add Appointment"
+        >
+          <form className="space-y-4">
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Phone Number"
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+            <select
+              name="mode"
+              value={formData.mode}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option>Online</option>
+              <option>Offline</option>
+            </select>
+            <select
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option>Clinic A</option>
+              <option>Clinic B</option>
+            </select>
+            <select
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
+            >
+              {Array.from({ length: 8 }, (_, i) => {
+                const date = new Date();
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split("T")[0];
+                return <option key={i}>{dateStr}</option>;
+              })}
+            </select>
+            <select
+              name="time"
+              value={formData.time}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
+            >
+              {["8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "3:00 PM", "5:00 PM", "7:00 PM"].map((t, i) => (
+                <option key={i}>{t}</option>
+              ))}
+            </select>
+
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-600 hover:text-black"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddAppointment}
+                className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+              >
+                Confirm & Book
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+      </div>
+    </div>
+  );
+};
+
+export default AppointmentsDashboard;
+
+ {/* {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-6">
               <h2 className="text-xl font-semibold mb-4">Add Appointment</h2>
@@ -207,10 +301,4 @@ const AppointmentsDashboard = () => {
               </form>
             </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default AppointmentsDashboard;
+        )} */}

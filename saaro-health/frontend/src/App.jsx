@@ -21,7 +21,17 @@ import NotFoundPage from "./pages/PageNotFound"
 import Socials from "./pages/Socials";
 import Automation from "./pages/Automation"
 import PatientHistoryPage from "./pages/PatientHistoryPage";
-
+import UserManagementPage from "./pages/UserManagementPage"
+import OnboardingPage from "./pages/OnBoardingPage"
+import SignupStepsPage from "./pages/SignupStepsPage";
+import StepTwoPage from "./pages/StepTwoPage"
+import StepThreePage from "./pages/StepThreePage"
+import StepFourPage from "./pages/StepFourPage"
+import LoginPage from "./pages/LoginPage"
+import ForgotPassword from "./pages/ForgotPassword"
+import VerifyAccountPage from "./pages/VerifyAccountPage"
+import ResetPassword from "./pages/ResetPassword"
+import PhoneLogin from "./pages/PhoneLogin"
 function App() {
 
 
@@ -30,6 +40,16 @@ function App() {
       
       <Routes>
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/login" element={<ProtectedRoute><LoginPage /></ProtectedRoute>} />
+        <Route path="/phonelogin" element={<ProtectedRoute><PhoneLogin /></ProtectedRoute>} />
+        <Route path="/verify" element={<ProtectedRoute><VerifyAccountPage /></ProtectedRoute>} />
+        <Route path="/forgot" element={<ProtectedRoute><ForgotPassword /></ProtectedRoute>} />
+        <Route path="/reset" element={<ProtectedRoute><ResetPassword /></ProtectedRoute>} />
+        <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+        <Route path="/signup" element={<ProtectedRoute><SignupStepsPage /></ProtectedRoute>} />
+        <Route path="/step2" element={<ProtectedRoute><StepTwoPage /></ProtectedRoute>} />
+         <Route path="/step3" element={<ProtectedRoute><StepThreePage /></ProtectedRoute>} />
+         <Route path="/step4" element={<ProtectedRoute><StepFourPage /></ProtectedRoute>} />
         <Route path="/ai" element={<ProtectedRoute><AiAssistant /></ProtectedRoute>} />
         <Route path="/invoice" element={<ProtectedRoute><Invoice /></ProtectedRoute>} />
         <Route path="/create-rx" element={<ProtectedRoute><CreateRx /></ProtectedRoute>} />
