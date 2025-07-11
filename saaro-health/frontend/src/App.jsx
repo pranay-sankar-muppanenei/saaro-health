@@ -67,6 +67,7 @@ function App() {
         <Route path="/social" element={<ProtectedRoute><Socials /></ProtectedRoute>} />
         <Route path="/automation" element={<ProtectedRoute><Automation /></ProtectedRoute>} />
         <Route path='/appointments' element={<ProtectedRoute><AppointmentsDashboard /></ProtectedRoute>} />
+                <Route path='/user' element={<ProtectedRoute><UserManagementPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFoundPage />} />
      </Routes>
       </>
